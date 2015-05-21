@@ -1,0 +1,192 @@
+head	1.5;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.5
+date	2010.04.22.19.14.38;	author brefsdal;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2010.04.01.14.24.43;	author brefsdal;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2010.03.25.19.40.46;	author brefsdal;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2010.03.25.19.15.59;	author brefsdal;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2010.03.25.18.54.58;	author brefsdal;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.5
+log
+@*** empty log message ***
+@
+text
+@#!/usr/bin/env python
+from sherpa.astro.ui import *
+
+def setup(srcid, image_file, psf_file, reg_file,
+          mysrc="gauss2d", mybkg="const2d"):
+    
+    load_data(srcid, image_file)
+    load_psf("psf%i" % srcid, psf_file)
+    set_psf(srcid, "psf%i" % srcid)
+
+    set_coord(srcid, "physical")
+    notice2d_id(srcid, "region(" + reg_file + "[SRCREG])")
+
+    # Switch to WCS for fitting
+    set_coord(srcid, "wcs")
+
+    # Use Nelder-Mead, C-statistic as fit method, statistic
+    set_method("neldermead")
+    set_stat("cstat")
+
+    set_source(srcid, '%s.src + %s.bkg' % (mysrc, mybkg))
+    guess(srcid, src)
+
+
+if __name__ == '__main__':
+
+    ifile1 = "acisf07999_000N001_r0035_regevt3_srcimg.fits"
+    pfile1 = "acisf07999_000N001_r0035b_psf3.fits"
+    rfile1 = "acisf07999_000N001_r0035_reg3.fits"
+
+    ifile2 = "acisf08478_000N001_r0043_regevt3_srcimg.fits"
+    pfile2 = "acisf08478_000N001_r0043b_psf3.fits"
+    rfile2 = "acisf08478_000N001_r0043_reg3.fits"
+
+    setup(1, ifile1, pfile1, rfile1)
+    setup(2, ifile2, pfile2, rfile2)
+
+    fit()
+@
+
+
+1.4
+log
+@*** empty log message ***
+@
+text
+@d27 3
+a29 3
+ifile1 = "acisf07999_000N001_r0035_regevt3_srcimg.fits"
+pfile1 = "acisf07999_000N001_r0035b_psf3.fits"
+rfile1 = "acisf07999_000N001_r0035_reg3.fits"
+d31 3
+a33 3
+ifile2 = "acisf08478_000N001_r0043_regevt3_srcimg.fits"
+pfile2 = "acisf08478_000N001_r0043b_psf3.fits"
+rfile2 = "acisf08478_000N001_r0043_reg3.fits"
+d35 2
+a36 2
+setup(1, ifile1, pfile1, rfile1)
+setup(2, ifile2, pfile2, rfile2)
+d38 1
+a38 1
+fit()
+@
+
+
+1.3
+log
+@*** empty log message ***
+@
+text
+@d1 1
+d4 3
+a6 1
+def setup(srcid, image_file, psf_file, reg_file, src="gauss2d", psfsize=None):
+a10 3
+    if psfsize is not None:
+        get_psf(srcid).size = psfsize
+
+d14 2
+a15 2
+    # Switch back to logical for fitting
+    set_coord(srcid, "logical")
+d21 2
+a22 2
+    set_source(srcid, src + '.g%i' % srcid)
+    guess(srcid, get_source(srcid))
+d25 1
+a25 10
+def main():
+    import sherpa.astro.ui as ui
+
+    ifile1 = "acisf07999_000N001_r0035_regevt3_srcimg.fits"
+    pfile1 = "acisf07999_000N001_r0035b_psf3.fits"
+    rfile1 = "acisf07999_000N001_r0035_reg3.fits"
+
+    ifile2 = "acisf08478_000N001_r0043_regevt3_srcimg.fits"
+    pfile2 = "acisf08478_000N001_r0043b_psf3.fits"
+    rfile2 = "acisf08478_000N001_r0043_reg3.fits"
+d27 7
+a33 2
+    setup(1, ifile1, pfile1, rfile1, psfsize=(90, 75))
+    setup(2, ifile2, pfile2, rfile2, psfsize=(75, 90))
+d35 2
+a36 3
+    ids, f = ui._session._get_fit(1)
+    res1 = f.fit()
+    print(res1.format())
+d38 1
+a38 7
+    ids, f = ui._session._get_fit(2)
+    res2 = f.fit()
+    print(res2.format())
+
+
+if __name__ == '__main__':
+    main()
+@
+
+
+1.2
+log
+@*** empty log message ***
+@
+text
+@a0 2
+#!/usr/bin/env python
+
+d25 1
+a25 2
+if __name__ == "__main__":
+
+d46 4
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d5 1
+a5 1
+def setup(srcid, image_file, psf_file, reg_file, src="gauss2d"):
+d10 3
+d39 2
+a40 2
+    setup(1, ifile1, pfile1, rfile1)
+    setup(2, ifile2, pfile2, rfile2)
+@

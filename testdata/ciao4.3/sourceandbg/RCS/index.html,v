@@ -1,0 +1,169 @@
+head	1.1;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.1
+date	2008.10.06.17.53.15;	author brefsdal;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" >
+ <head>
+  <title>Independent Background Responses</title>
+  <link rel="stylesheet" href="../../threads/threads.css"/>
+ </head>
+ <body>
+
+  <h1>Independent Background Responses</h1>
+
+  <hr/>
+
+  <h2>Loading the Data</h2>
+
+  <p>
+  Since the input PHA files don't contain keywords specifying the
+  corresponding instrument and background files, you need to read in
+  the individual files manually:
+  </p>
+
+<pre class="screen">
+In : load_pha("source.pi")
+statistical errors were found in file 'source.pi' but not used;
+to use them, re-read with use_errors=True
+
+In : load_arf("source.arf")
+
+In : load_rmf("source.rmf")
+
+In : load_bkg("back.pi")
+statistical errors were found in file 'back.pi' but not used;
+to use them, re-read with use_errors=True
+
+In : load_bkg_arf("back.arf")
+
+In : load_bkg_rmf("back.rmf")
+</pre>
+
+
+  <p>
+  We filter the source data set to only use bins with energies
+  between 0.3 and 10 keV:
+  </p>
+
+<pre class="screen">
+In : notice(0.3, 10)
+</pre> 
+
+  <h2>Establishing the Source and Background Models</h2>
+
+  <p>
+  First, we create the source model:
+  </p>
+
+<pre class="screen">
+In : set_model(xswabs.a1 * xsbbody.b1)
+</pre> 
+
+  <p>
+  Next, we create the background model, using the same absorption
+  component as the source model:
+  </p>
+
+<pre class="screen">
+In : set_bkg_model(a1 * xsbbody.b2)
+</pre> 
+
+  <p>
+  Finally, we set parameters on both models:
+  </p>
+ 
+<pre class="screen">
+In : a1.nH = 0.0336676
+
+In : b1.kT = 20
+
+In : b1.norm = 1e-02
+
+In : b2.kT = 0.5
+
+In : set_par(b2.norm, 1e-05, 1e-6)  % Set value and min simultaneously
+
+In : print get_model()
+apply_rmf(apply_arf((49429.2334679 * ((xswabs.a1 * xsbbody.b1) + backgroundsum))))
+   Param        Type          Value          Min          Max      Units
+   -----        ----          -----          ---          ---      -----
+   a1.nh        thawed    0.0336676            0       100000 10^22 atoms / cm^2
+   b1.kt        thawed           20         0.01          100        keV
+   b1.norm      thawed         0.01            0        1e+24 L39 / (D10)**2
+   b2.kt        thawed          0.5         0.01          100        keV
+   b2.norm      thawed        1e-05            0        1e+24 L39 / (D10)**2
+
+In : print get_bkg_model()
+(xswabs.a1 * xsbbody.b2)
+   Param        Type          Value          Min          Max      Units
+   -----        ----          -----          ---          ---      -----
+   a1.nh        thawed    0.0336676            0       100000 10^22 atoms / cm^2
+   b2.kt        thawed          0.5         0.01          100        keV
+   b2.norm      thawed        1e-05            0        1e+24 L39 / (D10)**2
+</pre>
+
+  <h2>Fitting</h2>
+
+<pre class="screen">
+In : fit()
+Dataset               = 1
+Method                = levmar
+Statistic             = chi2gehrels
+Initial fit statistic = 1024.04
+Final fit statistic   = 947.5 at function evaluation 133
+Data points           = 1330
+Degrees of freedom    = 1325
+Probability [Q-value] = 1
+Reduced statistic     = 0.715094
+Change in statistic   = 76.5391
+   a1.nh          0.0342266
+   b1.kt          20
+   b1.norm        0.00953809
+   b2.kt          0.563109
+   b2.norm        1.16118e-05
+</pre>
+
+<h2>Plotting</h2>
+
+  <p>
+   Both source and background datasets with residuals can be plotted
+   in the same frame:
+  </p>
+
+<pre class="screen">
+In : plot("fit", "bkgfit")  # <a href="chips_plot.png">chips</a> <a href="pylab_plot.png">pylab</a>
+</pre>
+
+  <h2>Scripting It</h2>
+
+  <p>
+  The files <a href="fit.py"><tt>fit.py</tt></a> and <a
+  href="fit.sl"><tt>fit.sl</tt></a> are Python and S-Lang scripts,
+  respectively, that perform the primary commands used above.  <a
+  href="fit.shp"><tt>fit.shp</tt></a> is the equivalent CIAO 3.3
+  Sherpa script.
+  </p>
+
+ </body>
+</html>
+@

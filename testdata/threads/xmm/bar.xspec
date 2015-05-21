@@ -1,0 +1,11 @@
+data pn_pi_src_bin10.ds
+response epn_ff20_sdY9.rmf
+backgrnd none
+weight standard
+ignore **-2.
+ignore 10.-**
+model wabs*wabs*powerlaw
+#0.0119
+#/*
+freeze 1
+fit

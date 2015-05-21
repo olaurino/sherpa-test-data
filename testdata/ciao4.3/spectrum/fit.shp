@@ -1,0 +1,23 @@
+read data data1.pi
+%read errors "data1.pi[cols CHANNEL, STAT_ERR]" fitsbin
+instrument source 1 = rsp[foo]("rmf.fits", "arf.fits")
+
+ignore
+notice energy 0.5:7.0
+paramprompt off
+source = xsphabs[abs1]*(xsmekal[mek1]+xsmekal[mek2])
+
+abs1.nh=0.1
+mek1.kt=0.1
+mek1.norm=0.1
+mek2.kt=2.
+mek2.norm=0.5
+
+mek1.norm.max=1.e10
+mek2.norm.max=1.e10
+mek1.norm.min=1.e-10
+mek2.norm.min=1.e-10
+mek1.kt=0.1
+mek2.kt=2.
+
+fit

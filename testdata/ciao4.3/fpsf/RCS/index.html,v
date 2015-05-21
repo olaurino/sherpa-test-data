@@ -1,0 +1,230 @@
+head	1.1;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.1
+date	2008.10.06.15.17.53;	author brefsdal;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" >
+ <head>
+  <title>Introduction to PSF convolution using a function kernel</title>
+  <link rel="stylesheet" href="../../threads/threads.css"/>
+ </head>
+ <body>
+
+  <h1>  The Sherpa PSF Interface  </h1>
+
+  <hr/>
+  
+  <h2>Introduction</h2>
+  
+  <p>
+  Sherpa now has a convolution kernel that can handle PSF
+  functions.
+
+  The user has the ability to create a 'psf' model object
+  and set the proper parameters.  These psf
+  model parameters differ from the one found in Sherpa 3.4.
+  Dimensionality is now determined by the user.
+  </p>
+
+  <p>
+  In this thread we show a simple example of how to use the new psf
+  interface in Sherpa.
+  </p>
+
+  <h2>Load Data + PSF</h2>
+
+  <p>
+  The FITS image file <a href="center_box_0.25pix.fits">
+  <tt>center_box_0.25pix.fits</tt></a> is an
+  ordinary FITS image file.  One can load an image as a
+  Sherpa data set with the <tt>load_image</tt> function.
+  The PSF can be defined with the <tt>load_psf</tt> function.
+  A Sherpa model definition or a user defined function can be
+  used as the kernel function.
+  </p>
+
+  <pre class="screen">
+  In : load_image("center_box_0.25pix.fits")
+
+  In : load_psf("psf", box2d.b1)
+  </pre>
+
+  <h2>Apply 2D Filter to Data</h2>
+  
+  <p>
+  Note: The coordinates to be used in the region definition must
+  match the current coordinates of the dataset.  The default
+  being Image coordinates.
+  </p>
+
+  <pre class="screen">
+  In : notice2d("BOX(88.16875,75.8625,70.416667,68.508334)")
+  </pre>
+
+  <h2>Define PSF Model</h2>
+
+  <p>
+  The Sherpa <tt>set_psf</tt> function will bind a PSF model to a
+  particular Sherpa session ID.
+  </p>
+
+  <pre class="screen">
+  In : set_psf(psf)
+
+  In : psf.size = [5,5]
+
+  In : psf.center = [89,77]
+
+  In : b1.xlow = 0
+
+  In : b1.xhi = 169
+  
+  In : b1.ylow = 0
+  
+  In : b1.yhi = 147
+  </pre>
+
+  <h2>Define the Source Model</h2>
+
+  <p>
+  A 2D gaussian with a constant can be used to model this data
+  </p>
+
+  <pre class="screen">
+  In : set_source(gauss2d.g1 + const2d.c1)
+
+  In : c1.c0 = 1.0
+
+  In : g1.fwhm = 6
+
+  In : g1.xpos = 80
+
+  In : g1.ypos = 90
+
+  In : g1.ampl = 100
+
+  In : freeze(g1.ellip, g1.theta, c1.c0)
+  </pre>
+
+  <h2>PSF model utilities</h2>
+
+  <p>
+  Deleting a PSF model from a Sherpa session can be done with the <tt>delete_psf</tt> function.  The <tt>get_model</tt> function will return the full convolved source model.  The <tt>get_source</tt> function will return the unconvolved source model.
+  </p>
+
+  <pre class="screen">
+  In : print get_source()
+  (gauss2d.g1 + const2d.c1)
+     Param        Type          Value          Min          Max      Units
+     -----        ----          -----          ---          ---      -----
+     g1.fwhm      thawed            6  1.17549e-38  3.40282e+38
+     g1.xpos      thawed           84 -3.40282e+38  3.40282e+38
+     g1.ypos      thawed           73 -3.40282e+38  3.40282e+38
+     g1.ellip     frozen            0            0        0.999
+     g1.theta     frozen            0            0      6.28319    radians
+     g1.ampl      thawed           55 -3.40282e+38  3.40282e+38
+     c1.c0        frozen            1            0  3.40282e+38
+
+  In : print get_model()
+  (box2d.b1) o ((gauss2d.g1 + const2d.c1))
+     Param        Type          Value          Min          Max      Units
+     -----        ----          -----          ---          ---      -----
+     b1.xlow      thawed            0 -3.40282e+38  3.40282e+38
+     b1.xhi       thawed          169 -3.40282e+38  3.40282e+38
+     b1.ylow      thawed            0 -3.40282e+38  3.40282e+38
+     b1.yhi       thawed          147 -3.40282e+38  3.40282e+38
+     b1.ampl      thawed            1           -1            1
+     g1.fwhm      thawed            6  1.17549e-38  3.40282e+38
+     g1.xpos      thawed           84 -3.40282e+38  3.40282e+38
+     g1.ypos      thawed           73 -3.40282e+38  3.40282e+38
+     g1.ellip     frozen            0            0        0.999
+     g1.theta     frozen            0            0      6.28319    radians
+     g1.ampl      thawed           55 -3.40282e+38  3.40282e+38
+     c1.c0        frozen            1            0  3.40282e+38
+     psf.size0    frozen            5            1            5
+     psf.size1    frozen            5            1            5
+     psf.center0  frozen           89            0           89
+     psf.center1  frozen           77            0           77
+     psf.radial   frozen            0            0            1
+     psf.norm     frozen            1            0            1
+
+  In : delete_psf()
+
+  In : print get_model()
+  (gauss2d.g1 + const2d.c1)
+     Param        Type          Value          Min          Max      Units
+     -----        ----          -----          ---          ---      -----
+     g1.fwhm      thawed            6  1.17549e-38  3.40282e+38
+     g1.xpos      thawed           84 -3.40282e+38  3.40282e+38
+     g1.ypos      thawed           73 -3.40282e+38  3.40282e+38
+     g1.ellip     frozen            0            0        0.999
+     g1.theta     frozen            0            0      6.28319    radians
+     g1.ampl      thawed           55 -3.40282e+38  3.40282e+38
+     c1.c0        frozen            1            0  3.40282e+38
+
+  In : set_psf(psf)
+  </pre>
+
+  <h2>Fitting the PSF</h2>
+  
+  <p>
+  With the method set to 'Simplex', the statistic set to
+  'Cash', and the PSF model convolved with the source model,
+  then the data can be fit with the Sherpa <tt>fit</tt> command.
+  </p>
+
+  <pre class="screen">
+  In : set_method("simplex")
+
+  In : set_stat("cash")
+
+  In : fit()
+  Dataset               = 1
+  Method                = neldermead
+  Statistic             = cash
+  Initial fit statistic = 9340.6
+  Final fit statistic   = 3967.91 at function evaluation 466
+  Data points           = 4899
+  Degrees of freedom    = 4890
+  Change in statistic   = 5372.69
+     b1.xlow        -4.51648
+     b1.xhi         164.657
+     b1.ylow        3.16859
+     b1.yhi         141.987
+     b1.ampl        -0.954898
+     g1.fwhm        4.51027
+     g1.xpos        89.061
+     g1.ypos        76.5967
+     g1.ampl        62.4813
+  </pre>
+
+  <h2>Scripting It</h2>
+  
+  <p>
+  The files <a href="fit.py">fit.py</a> and <a
+  href="fit.sl">fit.sl</a> are Python and S-Lang scripts,
+  respectively, that load data from a source image and defines
+  an appropriate PSF function.
+  </p>
+ </body>
+</html>
+@

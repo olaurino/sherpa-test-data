@@ -1,0 +1,140 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" >
+ <head>
+  <title>Introduction to PSF convolution</title>
+  <link rel="stylesheet" href="../../threads/threads.css"/>
+ </head>
+ <body>
+
+  <h1>  The Sherpa PSF Interface  </h1>
+
+  <hr/>
+  
+  <h2>Introduction</h2>
+  
+  <p>
+  Sherpa now has a convolution kernel that can handle PSF
+  data.  The source data and PSF are read into separate
+  Sherpa datasets appropriate to its file spec.
+
+  The user has the ability to create a 'psf' model object
+  and set the proper parameters.  These psf model parameters differ
+  from the ones found in Sherpa 3.4.  Dimensionality is now determined by the
+  user.
+  </p>
+
+  <p>
+  In this thread we show a simple example of how to use the new psf
+  interface in Sherpa.
+  </p>
+
+  <h2>Load Data + PSF</h2>
+
+  <p>
+  The FITS image file <a href="center_box_0.25pix.fits">
+  <tt>center_box_0.25pix.fits</tt></a> is an
+  ordinary FITS image file.  One can load an image as a
+  Sherpa data set with the <tt>load_image</tt> function.
+  The PSF file <a href="psf_f1_norm_0.25pix.fits"> 
+  <tt>psf_f1_norm_0.25pix.fits</tt></a>, can be defined as a PSF
+  model where the convolution will be done using FFT. 
+  The PSF image can be created as a model with the id 'psf'
+  using the <tt>load_psf</tt> function.
+  </p>
+
+  <pre class="screen">
+  In : load_image("center_box_0.25pix.fits")
+  
+  In : load_psf("psf", "psf_f1_norm_0.25pix.fits")
+  </pre>
+
+  <h2>Apply 2D Filter to Data</h2>
+  
+  <p>
+  Note: The coordinates to be used in the region definition must
+  match the current coordinates of the dataset.  The default
+  being Image coordinates.
+  </p>
+
+  <pre class="screen">
+  In : notice2d("BOX(88.16875,75.8625,70.416667,68.508334)")
+  </pre>
+
+  <h2>Define PSF Model Parameters</h2>
+
+  <p>
+  The Sherpa <tt>set_psf</tt> function will bind a PSF model
+  to a particular Sherpa session ID.
+  </p>
+
+  <pre class="screen">
+  In : set_psf(psf)
+
+  In : psf.size = [72,72]
+
+  In : psf.center = [128,129]
+  </pre>
+
+  <h2>Define the Source Model</h2>
+
+  <p>
+  A 2D gaussian with a constant can be used to model this data
+  </p>
+
+  <pre class="screen">
+  In : set_source(gauss2d.g1 + const2d.c1)
+
+  In : c1.c0 = 1.0
+
+  In : g1.fwhm = 6
+
+  In : g1.xpos = 90
+
+  In : g1.ypos = 80
+
+  In : g1.ampl = 100
+
+  In : freeze(g1.ellip, g1.theta, c1.c0)
+  </pre>
+
+  <h2>Fitting the PSF</h2>
+  
+  <p>
+  With the method set to 'NelderMead', the statistic set to
+  'Cash', and the PSF model convolved with the source model,
+  then the data can be fit with the Sherpa <tt>fit</tt> command.
+  </p>
+
+  <pre class="screen">
+  In : set_method("neldermead")
+  
+  In : set_stat("cash")
+
+  In : fit()
+  Dataset               = 1
+  Method                = neldermead
+  Statistic             = cash
+  Initial fit statistic = 7648.86
+  Final fit statistic   = 4066.78 at function evaluation 305
+  Data points           = 4899
+  Degrees of freedom    = 4895
+  Change in statistic   = 3582.08
+     g1.fwhm        2.80117
+     g1.xpos        88.661
+     g1.ypos        77.2271
+     g1.ampl        166.649
+  </pre>
+  
+
+
+  <h2>Scripting It</h2>
+  
+  <p>
+  The files <a href="fit.py">fit.py</a> and <a
+  href="fit.sl">fit.sl</a> are Python and S-Lang scripts,
+  respectively, that load data from a source image and loads
+  an appropriate PSF image.
+  </p>
+ </body>
+</html>

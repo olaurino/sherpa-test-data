@@ -1,0 +1,52 @@
+head	1.2;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.2
+date	2007.10.02.17.39.45;	author brefsdal;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2007.09.05.20.44.36;	author brefsdal;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@*** empty log message ***
+@
+text
+@require("sherpa");
+load_pha("pn_pi_src_bin10.ds");
+load_arf("pn_pi_src.arf");
+load_rmf("epn_ff20_dY9.rmf");
+notice(2., 10.);
+set_model(xswabs.gal*xswabs.intrin*xspowerlaw.phard);
+gal.nH= 0.0119;
+freeze(gal.nh);
+intrin.nH.max=30;
+fit();
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d6 4
+a9 4
+set_model(xswabs.abs1*xswabs.abs2*xspowerlaw.p1);
+abs1.nH= 0.0119;
+freeze(abs1.nh);
+abs2.nH.max=30;
+@

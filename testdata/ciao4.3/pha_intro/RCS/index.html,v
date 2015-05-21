@@ -1,0 +1,556 @@
+head	1.1;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.1
+date	2008.10.06.15.42.16;	author brefsdal;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" >
+ <head>
+  <title>Introduction to Fitting PHA Spectra</title>
+  <link rel="stylesheet" href="../../threads/threads.css"/>
+ </head>
+ <body>
+
+  <h1>Introduction to Fitting PHA Spectra</h1>
+
+  <hr/>
+
+  <h2>Loading the Data</h2>
+
+  <p>
+  To read in a PHA data set and utilize the header keywords
+  for the arf, rmf, and backgound use the <tt>load_pha</tt> function:
+  </p>
+
+<pre class="screen">
+In : load_pha("3c273.pi")
+statistical errors were found in file '3c273.pi'
+but not used; to use them, re-read with use_errors=True
+read ARF file 3c273.arf
+read RMF file 3c273.rmf
+statistical errors were found in file '3c273_bg.pi'
+but not used; to use them, re-read with use_errors=True
+read background file 3c273_bg.pi
+</pre>
+
+  <p>
+  If the source file does not contain the header keywords
+  for the arf, rmf, and background, they can be read in with
+  the <tt>load_rmf</tt>, <tt>load_arf</tt>, and <tt>load_bkg</tt> functions
+  </p>
+
+<pre class="screen">
+In : load_arf("3c273.arf")
+ 
+In : load_rmf("3c273.rmf")
+ 
+In : load_bkg("3c273_bg.pi")
+statistical errors were found in file '3c273_bg.pi' but not used;
+to use them, re-read with use_errors=True
+</pre>
+
+  <p>
+  Once the data have been read in, you can use the <tt>show_data</tt>
+  function to display the dataset(s).
+  </p>
+
+<pre class="screen">
+In : show_data()
+Data Set: 1
+Filter: 0.1248-12.4100 Energy (keV)
+Noticed Channels: 1-1024
+name           = 3c273.pi
+channel        = Int32[1024]
+counts         = Int32[1024]
+staterror      = None
+syserror       = None
+bin_lo         = None
+bin_hi         = None
+grouping       = Int16[1024]
+quality        = Int16[1024]
+exposure       = 38564.6089269
+backscal       = 2.52643646989e-06
+areascal       = 1.0
+grouped        = True
+subtracted     = False
+units          = energy
+response_ids   = [1]
+background_ids = [1]
+
+RMF Data Set: 1:1
+name     = 3c273.rmf
+detchans = 1024
+energ_lo = Float64[1090]
+energ_hi = Float64[1090]
+n_grp    = Int16[1090]
+f_chan   = UInt32[2002]
+n_chan   = UInt32[2002]
+matrix   = Float64[61834]
+offset   = 1
+e_min    = Float64[1024]
+e_max    = Float64[1024]
+
+ARF Data Set: 1:1
+name     = 3c273.arf
+energ_lo = Float64[1090]
+energ_hi = Float64[1090]
+specresp = Float64[1090]
+bin_lo   = None
+bin_hi   = None
+exposure = 38564.1414549
+
+Background Data Set: 1:1
+name           = 3c273_bg.pi
+channel        = Int32[1024]
+counts         = Int32[1024]
+staterror      = None
+syserror       = None
+bin_lo         = None
+bin_hi         = None
+grouping       = Int16[1024]
+quality        = Int16[1024]
+exposure       = 38564.6089269
+backscal       = 1.87253514146e-05
+areascal       = 1.0
+grouped        = True
+subtracted     = False
+units          = energy
+response_ids   = [1]
+background_ids = []
+
+Background RMF Data Set: 1:1
+name     = 3c273.rmf
+detchans = 1024
+energ_lo = Float64[1090]
+energ_hi = Float64[1090]
+n_grp    = Int16[1090]
+f_chan   = UInt32[2002]
+n_chan   = UInt32[2002]
+matrix   = Float64[61834]
+offset   = 1
+e_min    = Float64[1024]
+e_max    = Float64[1024]
+
+Background ARF Data Set: 1:1
+name     = 3c273.arf
+energ_lo = Float64[1090]
+energ_hi = Float64[1090]
+specresp = Float64[1090]
+bin_lo   = None
+bin_hi   = None
+exposure = 38564.1414549
+</pre>
+
+  <p>
+  To filter the data, use the <tt>notice</tt> and
+  <tt>ignore</tt> functions.  The units of the filter bounds are
+  determined by <tt>get_data().units</tt>, which defaults to <tt>'energy'</tt>
+  but can be changed by the user to <tt>'wavelength'</tt>,
+  <tt>'channel'</tt>, or <tt>'bin'</tt>:
+  </p>
+
+<pre class="screen">
+In : get_data().units
+'energy'
+ 
+In : notice(0.1, 6.0)  # Use notice_id() to apply to only one data set
+</pre>
+
+  <p>
+  To subtract the background data, use the <tt>subtract</tt> function:
+  </p>
+
+<pre class="screen">
+In : subtract()
+ 
+In : get_data().subtracted
+True
+</pre>
+
+  <h2>Establishing the Source Model</h2>
+
+  <p>
+  The creation and manipulation of model components and source models works
+  much like it did in the old Sherpa:
+  </p>
+
+<pre class="screen">
+In : set_model(xsphabs.abs1 * powlaw1d.p1)
+ 
+In : abs1.nH = 0.07
+ 
+In : freeze(abs1.nH)
+ 
+In : print abs1
+xsphabs.abs1
+   Param        Type          Value          Min          Max      Units
+   -----        ----          -----          ---          ---      -----
+   abs1.nh      frozen         0.07            0       100000 10^22 atoms / cm^2
+ 
+In : print p1
+powlaw1d.p1
+   Param        Type          Value          Min          Max      Units
+   -----        ----          -----          ---          ---      -----
+   p1.gamma     thawed            1          -10           10
+   p1.ref       frozen            1 -3.40282e+38  3.40282e+38
+   p1.ampl      thawed            1            0  3.40282e+38
+ 
+In : print get_source()
+(xsphabs.abs1 * powlaw1d.p1)
+   Param        Type          Value          Min          Max      Units
+   -----        ----          -----          ---          ---      -----
+   abs1.nh      frozen         0.07            0       100000 10^22 atoms / cm^2
+   p1.gamma     thawed            1          -10           10
+   p1.ref       frozen            1 -3.40282e+38  3.40282e+38
+   p1.ampl      thawed            1            0  3.40282e+38
+
+In : print get_model()
+apply_rmf(apply_arf((38564.6089269 * (xsphabs.abs1 * powlaw1d.p1))))
+   Param        Type          Value          Min          Max      Units
+   -----        ----          -----          ---          ---      -----
+   abs1.nh      frozen         0.07            0       100000 10^22 atoms / cm^2
+   p1.gamma     thawed            1          -10           10
+   p1.ref       frozen            1 -3.40282e+38  3.40282e+38
+   p1.ampl      thawed            1            0  3.40282e+38
+</pre>
+
+  <h2>Fitting</h2>
+
+  <p>
+  To view the statistics available and set a statistic for
+  use in a fit, use the <tt>list_stats</tt> and <tt>set_stat</tt> functions.
+  Sherpa uses <tt>chi2gehrels</tt> by default.
+  </p>
+  
+<pre class="screen">
+In : list_stats()
+Out: ['leastsq', 'chi2constvar', 'chi2modvar', 'cash', 'chi2gehrels', 'chi2datavar', 'chi2xspecvar', 'cstat']
+
+In : set_stat('chi2gehrels')
+</pre>
+
+ <p>
+ To display the current statistic, use the <tt>show_stat</tt> function.
+ </p>
+
+<pre class="screen">
+In : show_stat()
+Statistic: Chi2Gehrels
+</pre>
+  
+  <p>
+  To view the optimization methods available and set a
+  method for use in a fit, use the <tt>list_methods</tt> and
+  <tt>set_method</tt> functions. Sherpa uses <tt>levmar</tt> by default.
+  </p>
+
+<pre class="screen">
+In : list_methods()
+Out: ['levmar', 'moncar', 'simplex', 'neldermead']
+
+In : set_method('levmar')
+</pre>
+
+  <p>
+  To display the current optimization method, use the <tt>show_method</tt> function.
+  </p>
+
+<pre class="screen">
+In : set_method_opt("maxfev", 1000)     #Sets number of function evaluations to 1000
+
+In : show_method()
+Optimization Method: LevMar
+name    = levmar
+ftol    = 1.19209289551e-07
+xtol    = 1.19209289551e-07
+gtol    = 1.19209289551e-07
+maxfev  = 1000
+epsfcn  = 1.19209289551e-07
+factor  = 100.0
+verbose = 0
+</pre>
+
+  <p>
+  To perform a fit, you use the <tt>fit</tt> function:
+  </p>
+
+<pre class="screen">
+In : fit()
+Dataset               = 1
+Method                = levmar
+Statistic             = chi2gehrels
+Initial fit statistic = 6.83386e+10
+Final fit statistic   = 37.9079 at function evaluation 22
+Data points           = 44
+Degrees of freedom    = 42
+Probability [Q-value] = 0.651155
+Reduced statistic     = 0.902569
+Change in statistic   = 6.83386e+10
+   p1.gamma       2.15852
+   p1.ampl        0.00022484
+</pre>
+
+  <p>
+  The final statistic value and best-fit parameters are printed to the
+  screen.  To get more detailed fit results, use the
+  <tt>get_fit_results</tt> function:
+  </p>
+
+<pre class="screen">
+In : res = get_fit_results()
+
+In : res.succeeded  # Did the fit succeed?
+Out: True
+ 
+In : res.parvals    # Final parameter values
+Out: (2.1585155108958141, 0.00022484014786259732)
+ 
+In : res.statval    # Final statistic value
+Out: 37.907913790316748
+
+In : res.numpoints  # Number of data points
+Out: 44
+
+In : res.dof        # Degrees of freedom
+Out: 42
+
+In : res.qval       # Probability [Q-value]
+Out: 0.65115527405436247
+
+In : res.rstat      # Reduced statistic
+Out: 0.90256937595992259
+
+In : res.message    # Optimizer status message
+Out: 'both actual and predicted relative reductions in the sum of squares
+     are at most ftol=1.19209e-07'
+ 
+In : res.nfev       # Number of function evaluations
+Out: 22
+
+In : calc_stat()    # Calculate statistic without refitting
+Out: 37.907913790316762
+
+In :calc_chisqr()   # Calculate the statistic contribution per bin
+array([  8.18672857e+00,   5.97520920e+00,   1.12656176e+00,
+         2.70996433e-01,   1.52222564e-01,   6.41849654e-03,
+         7.45752883e-01,   3.65878490e-01,   7.64892124e-01,
+         7.54582962e-02,   6.15857733e-01,   2.33666307e+00,
+         2.01512592e-01,   3.57967769e-02,   9.88219657e-01,
+         3.98382525e-01,   1.35736379e-02,   1.26937320e+00,
+         1.71508420e+00,   2.12311365e-01,   8.44121611e-02,
+         1.43547662e-01,   5.85917785e-01,   4.80676462e-02,
+         1.97969717e+00,   1.00172042e-01,   1.05894103e+00,
+         4.39172443e-01,   3.28729744e-01,   6.84238565e-02,
+         1.50504771e-01,   1.24953231e+00,   6.00567767e-01,
+         5.35535306e-04,   8.38929631e-01,   1.14986971e+00,
+         1.77134436e-01,   6.99634175e-02,   2.85814372e-01,
+         2.05568965e+00,   2.35952177e-01,   2.13674053e-01,
+         1.51009822e-01,   4.34761022e-01])
+
+
+</pre>
+
+  <h2>Estimating Errors</h2>
+
+  <p>
+  To estimate errors in your best-fit parameters using the covariance method,
+  use the <tt>covar</tt> function:
+  </p>
+
+<pre class="screen">
+In : covar()
+Dataset               = 1
+Confidence Method     = covariance
+Fitting Method        = levmar
+Statistic             = chi2gehrels
+covariance 1-sigma (68.2689%) bounds:
+   Param            Best-Fit  Lower Bound  Upper Bound
+   -----            --------  -----------  -----------
+   p1.gamma          2.15852   -0.0827856    0.0827856
+   p1.ampl        0.00022484 -1.48256e-05  1.48256e-05
+</pre>
+
+  <p>
+  Similarly, the projection method is available via the <tt>proj</tt>
+  function.
+  </p>
+
+<pre class="screen">
+In : proj()
+Dataset               = 1
+Confidence Method     = projection
+Fitting Method        = levmar
+Statistic             = chi2gehrels
+projection 1-sigma (68.2689%) bounds:
+   Param            Best-Fit  Lower Bound  Upper Bound
+   -----            --------  -----------  -----------
+   p1.gamma          2.15852   -0.0823897    0.0834194
+   p1.ampl        0.00022484 -1.48672e-05  1.47712e-05
+</pre>
+
+  <h2>Flux, Counts, and Equivalent Width</h2>
+
+  <p>
+  To calculate the flux of a PHA dataset use the
+  <tt>calc_photon_flux</tt> or <tt>calc_energy_flux</tt> commands
+  </p>
+
+<pre class="screen">
+In : eqwidth(p1, get_source())   #Calculates the equivalent width (p1, p1*abs1)
+
+In : calc_photon_flux()          #Calculates photon flux over entire dataset interval.
+
+In : calc_energy_flux()          #Calculates energy flux over entire dataset interval.
+
+In : calc_photon_flux(2., 10.)   #Calculates photon flux over interval 2 to 10 keV.
+
+In : calc_energy_flux(2., 10.)   #Calculates energy flux over interval 2 to 10 keV.
+</pre>
+
+  <p>
+  To calculate the counts of a PHA dataset use the
+  <tt>calc_data_sum</tt>, <tt>calc_model_sum</tt>, or <tt>calc_source_sum</tt> commands
+  </p>
+
+<pre class="screen">
+In : calc_data_sum()
+
+In : calc_model_sum()
+
+In : calc_source_sum()
+
+In : calc_data_sum(2., 10.)
+
+In : calc_model_sum(2., 10.)
+
+In : calc_source_sum(2., 10.)
+</pre>
+
+  <h2>Plotting Results</h2>
+
+  <p>
+  To make a data, model, fit (model over data), residuals, or ratio plot, use
+  the appropriate <tt>plot_*</tt> function:
+  </p>
+
+<pre class="screen">
+In : plot_data()	# <a href="chips_data.png">chips</a> <a href="pylab_data.png">pylab</a>
+ 
+In : plot_model()       # <a href="chips_model.png">chips</a> <a href="pylab_model.png">pylab</a>
+ 
+In : plot_fit()		# <a href="chips_fit.png">chips</a> <a href="pylab_fit.png">pylab</a>
+ 
+In : plot_resid()	# <a href="chips_resid.png">chips</a> <a href="pylab_resid.png">pylab</a>
+ 
+In : plot_ratio()	# <a href="chips_ratio.png">chips</a> <a href="pylab_ratio.png">pylab</a>
+
+In : plot_delchi()      # <a href="chips_delchi.png">chips</a> <a href="pylab_delchi.png">pylab</a>
+
+In : plot_source()      # <a href="chips_source.png">chips</a> <a href="pylab_source.png">pylab</a>
+
+In : plot_chisqr()      # <a href="chips_stat.png">chips</a> <a href="pylab_stat.png">pylab</a>
+</pre>
+
+  <p>
+  To display a combination plot of the fit with residuals, use the
+  <tt>plot_fit_resid</tt> function:
+  </p>
+
+<pre class="screen">
+In : plot_fit_resid()	# <a href="chips_split.png">chips</a> <a href="pylab_split.png">pylab</a>
+
+In : plot_fit_delchi()  # <a href="chips_split2.png">chips</a> <a href="pylab_split2.png">pylab</a>
+</pre>
+
+  <p>
+  To display a multiplot of plot objects, use the
+  <tt>plot</tt> function with any of following args: "data","model","fit","ratio","resid","chisqr","delchi", "back", "arf", "source","bkg", "bkgsource", "bkgfit":
+  </p>
+
+<pre class="screen">
+In : plot("data","back","fit","arf") #<a href="chips_multi.png">chips</a> <a href="pylab_multi.png">pylab</a>
+</pre>
+
+  <h2>Sending a Plot to File or Printer</h2>
+  <p>
+  To save a current plot in a Sherpa session use the pychips command <tt>print_window</tt>
+  </p>
+
+  <pre class="screen">
+
+  In : plot_fit(replot=True)   # replot the cached arrays without recalculating
+
+  In : from pychips import print_window
+
+  In : print_window()             # no arguments will send the plot to the printer
+
+  In : print_window("fit_plot", ["format", "eps"])  # print the plot to file, formats include ps, pdf, and eps
+  </pre>
+
+  <h2>Saving and Restoring Sherpa Sessions</h2>
+  <p>
+  To save a complete record of a Sherpa session use the  <tt>save</tt> command
+  </p>
+
+  <pre class="screen">
+  In : save()                      # Automatically save to binary file "sherpa.save"
+
+  In : save("mysherpa.session")    # Saves session to user defined filename
+
+  In : restore()                   # Automatically restores Sherpa session "sherpa.save" from current directory
+
+  In : restore("mysherpa.session") # Restores session from user defined filename
+  </pre>
+
+  <p>
+  Revisiting dataset IDs and model IDs can be viewed by <tt>list_*</tt> commands
+  </p>
+
+  <pre class="screen">
+  In : get_default_id()
+  Out: 1
+
+  In : list_data_ids()
+  Out: [1, 2]
+
+  In : list_model_ids()
+  Out: [1]
+
+  In : list_models()
+  Out: ['xsbbody', 'xscomptt', ..., 'xszwabs', 'xszwndabs']
+
+  In : list_model_components()
+  Out: ['p1', 'abs1']
+  </pre>
+
+  <h2>Scripting It</h2>
+
+  <p>
+  The files <a href="fit.py"><tt>fit.py</tt></a> and <a
+  href="fit.sl"><tt>fit.sl</tt></a> are Python and S-Lang scripts,
+  respectively, that perform the primary commands used above.  <a
+  href="fit.shp"><tt>fit.shp</tt></a> is the equivalent CIAO 3.3
+  Sherpa script.
+  </p>
+
+ </body>
+</html>
+@

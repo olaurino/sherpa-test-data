@@ -1,0 +1,16 @@
+data source_bin10.pi
+subtract
+notice source 1 energy 1:7
+
+paramprompt off
+source = xswabs[abs1] * powlaw1d[power]
+power.ampl.max = 0.01
+
+pileup = jdpileup[jdp]
+jdp.f.min = 0.85
+jdp.ftime = 3.2
+jdp.fracexp = 1
+
+method simplex
+
+fit

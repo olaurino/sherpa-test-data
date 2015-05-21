@@ -1,0 +1,13 @@
+DATA 1 pi2278.fits
+DATA 2 pi2286.fits
+
+INSTRUMENT SOURCE 1 = RSP[r1]("rmf2278.fits", "arf2278.fits")
+INSTRUMENT SOURCE 2 = RSP[r2]("rmf2286.fits", "arf2286.fits")
+
+PARAMPROMPT OFF
+
+SOURCE 1 = XSWABS[abs1] * POW[pl1]
+SOURCE 2 = abs1 * POW[pl2]
+
+pl2.gamma => pl1.gamma
+FIT 1:2

@@ -1,0 +1,38 @@
+h1
+{
+	font-size: 200%;
+}
+
+h2
+{
+	font-size: 175%;
+}
+
+p
+{
+	text-indent: 2em;
+	font-size: 130%;
+}
+
+pre.screen 
+{
+	text-align: left;
+	background-color: #cccccc;
+	border: thin solid black;
+	margin: 2em 3em 2em;
+	padding: 1em;
+}
+
+table
+{
+	border: 1;
+	padding: 1px;
+	table-layout: auto;
+}
+
+
+td
+{
+	padding: 1px;
+
+}

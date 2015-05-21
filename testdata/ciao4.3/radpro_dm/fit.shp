@@ -1,0 +1,11 @@
+read data  "1838_rprofile_rmid.fits[cols RMID,SUR_BRI]" fitsbin
+read error "1838_rprofile_rmid.fits[cols RMID,SUR_BRI_ERR]" fitsbin
+paramprompt off
+source = beta1d[src1]
+src1.r0 = 105
+src1.beta = 4
+src1.xpos = 0
+src1.ampl = 0.00993448
+src1.ampl.max = 10
+freeze src1.xpos
+fit

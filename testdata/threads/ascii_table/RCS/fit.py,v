@@ -1,0 +1,49 @@
+head	1.2;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.2
+date	2007.03.05.15.12.38;	author brefsdal;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2007.03.01.19.35.23;	author brefsdal;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@*** empty log message ***
+@
+text
+@from sherpa.astro.ui import *
+
+load_table(1, "sim.poisson.1.dat")
+
+load_table(1, "sim.poisson.1.dat", 2)
+
+load_table(1, "sim.poisson.1.dat", 2, ("col2", "col1") )
+
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d7 1
+a7 1
+load_table(1, "sim.poisson.1.dat", 2, ("col1", "col2") )
+a8 1
+load_table(1, "sim.poisson.1.dat", 2, ('COL1', 'COL2') )
+@

@@ -1,0 +1,11 @@
+DATA 3c273.pi
+NOTICE ENERGY 0.1:6.0
+SUBTRACT
+
+PARAMPROMPT OFF
+SOURCE = xsphabs[abs1] * powlaw1d[p1]
+abs1.nh = 0.07
+FREEZE abs1
+
+FIT
+COVARIANCE
